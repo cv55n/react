@@ -64,10 +64,88 @@ function calculateStandardErrorOfMean(data) {
     return stats.stdev(means);
 }
 
+function calculateAverages(runs) {
+    const data = [];
+    const averages = [];
+
+    runs.forEach((entries, x) => {
+        entries.forEach(({entry, time}, i) => {
+            if (i >= averages.length) {
+                data.push([time]);
+
+                averages.push({
+                    entry,
+
+                    mean: 0,
+                    sem: 0
+                });
+            } else {
+                data[i].push(time);
+
+                if (x === runs.length - 1) {
+                    const dataWithoutOutliers = stats.filterMADoutliers(data[i]);
+
+                    averages[i].mean = stats.mean(dataWithoutOutliers);
+                    averages[i].sem = calculateStandardErrorOfMean(data[i]);
+                }
+            }
+        });
+    });
+
+    return averages;
+}
+
+async function initChrome() {
+    const platform = os.platform();
+
+    if (platform === 'linux') {
+        process.env.XVFBARGS = '-screen 0, 1024x768x16';
+        process.env.LIGHTHOUSE_CHROMIUM_PATH = 'chromium-browser';
+
+        const child = spawn('xvfb start', [{
+            detached: true,
+            stdio: ['ignore']
+        }]);
+
+        child.unref();
+
+        // aguardar pelo chrome carregar e continuar
+        await wait(3000);
+
+        return child;
+    }
+}
+
 async function launchChrome(headless) {
     return await chromeLauncher.launch({
         chromeFlags: [headless ? '--headless' : '']
     });
+}
+
+async function runBenchmark(benchmark, headless) {
+    const results = {
+        runs: [],
+        averages: []
+    };
+
+    await initChrome();
+
+    for (let i = 0; i < timesToRun; i++) {
+        let chrome = await launchChrome(headless);
+
+        results.runs.push(await runScenario(benchmark, chrome));
+
+        // adicionar um delay ou algumas vezes isso confunde o lighthouse
+        await wait(500);
+
+        try {
+            await chrome.kill();
+        } catch (e) {}
+    }
+
+    results.averages = calculateAverages(results.runs);
+
+    return results;
 }
 
 module.exports = runBenchmark;
