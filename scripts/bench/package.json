@@ -1,20 +1,22 @@
 {
-  "name": "bench",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "react-benchmark",
+  "version": "0.0.1",
+  "main": "runner.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node runner.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "chalk": "^5.6.0",
     "chrome-launcher": "^1.2.0",
     "cli-table": "^0.3.11",
     "http-server": "^14.1.1",
-    "http2": "^3.3.6",
-    "lighthouse": "^12.8.2"
+    "http2": "^3.3.7",
+    "lighthouse": "^12.8.2",
+    "mime": "^4.0.7",
+    "minimist": "^1.2.8",
+    "ncp": "^2.0.0",
+    "nodegit": "^0.27.0",
+    "rimraf": "^6.0.1",
+    "stats-analysis": "^2.0.0"
   }
 }
